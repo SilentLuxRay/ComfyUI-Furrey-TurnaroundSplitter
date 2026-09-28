@@ -1,0 +1,13 @@
+[project]
+name = "comfyui-furrey-turnaroundsplitter"
+description = "Auto-splits a character turnaround sheet into separate per-view crops, no manual pixel math."
+version = "1.0.0"
+license = { file = "LICENSE" }
+
+[project.urls]
+Repository = "https://github.com/SilentLuxRay/ComfyUI-Furrey-TurnaroundSplitter"
+
+[tool.comfy]
+PublisherId = "SilentLuxRay"
+DisplayName = "ComfyUI-Furrey-TurnaroundSplitter"
+Icon = ""
