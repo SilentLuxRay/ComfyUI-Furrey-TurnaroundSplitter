@@ -8,6 +8,6 @@ license = { file = "LICENSE" }
 Repository = "https://github.com/SilentLuxRay/ComfyUI-Furrey-TurnaroundSplitter"
 
 [tool.comfy]
-PublisherId = "SilentLuxRay"
+PublisherId = "silentluxray"
 DisplayName = "ComfyUI-Furrey-TurnaroundSplitter"
 Icon = ""
