@@ -7,6 +7,9 @@ Built for multi-view image-to-3D pipelines (Trellis2 / Pixal3D, Hunyuan3D, Tripo
 that need each view of a turnaround sheet fed in separately, but works with any sheet of
 flat-background images placed side by side.
 
+Also includes **Scale Mesh (per axis)**, a small utility to fix a squashed/stretched 3D
+output by imposing the proportion you want directly in the workflow — see below.
+
 ## ✨ Features
 
 * **🔍 Auto-detects the background color** — works with black, white, or any flat/uniform

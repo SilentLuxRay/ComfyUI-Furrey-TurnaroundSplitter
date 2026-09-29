@@ -1,6 +1,6 @@
 [project]
 name = "comfyui-furrey-turnaroundsplitter"
-description = "Auto-splits a character turnaround sheet into separate per-view crops, no manual pixel math."
+description = "Auto-splits a character turnaround sheet into separate per-view crops, and scales a mesh per axis to fix squashed/stretched 3D output -- no manual pixel math or Blender post-fix needed."
 version = "1.3.0"
 license = { file = "LICENSE" }
 
