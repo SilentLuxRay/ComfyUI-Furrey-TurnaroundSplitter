@@ -17,13 +17,6 @@ class AutoSplitTurnaroundSheet:
                 "num_views": ("INT", {"default": 4, "min": 1, "max": MAX_VIEWS}),
                 "padding": ("INT", {"default": 12, "min": 0, "max": 512,
                                      "tooltip": "Fixed margin in pixels. Ignored if margin_percent > 0."}),
-                "margin_percent": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 50.0, "step": 0.5,
-                                              "tooltip": "Margin as a percentage of the view's own size, added on ALL sides "
-                                                         "(including top/bottom, even outside the source sheet's own bounds) "
-                                                         "-- self-scales to any resolution, unlike a fixed pixel padding. "
-                                                         "0 = disabled, use 'padding' instead. Many 3D/conditioning pipelines "
-                                                         "expect the subject to occupy ~90% of the frame (about 8-10% margin), "
-                                                         "not edge-to-edge."}),
                 "bg_threshold": ("FLOAT", {"default": 0.04, "min": 0.0, "max": 1.0, "step": 0.005,
                                             "tooltip": "Per-pixel distance from the detected background color, above which a pixel counts as 'content'."}),
                 "min_col_fraction": ("FLOAT", {"default": 0.01, "min": 0.0, "max": 1.0, "step": 0.005,
@@ -36,6 +29,13 @@ class AutoSplitTurnaroundSheet:
                                                 "tooltip": "Crop each view to its own tight vertical content bounds instead of the full image height."}),
                 "pad_to_square": ("BOOLEAN", {"default": False,
                                                "tooltip": "Pad each cropped view to a square canvas (centered, filled with the detected background color). Useful for pipelines (e.g. CLIPVisionEncode-based conditioning) that expect square, centered inputs."}),
+                "margin_percent": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 50.0, "step": 0.5,
+                                              "tooltip": "Margin as a percentage of the view's own size, added on ALL sides "
+                                                         "(including top/bottom, even outside the source sheet's own bounds) "
+                                                         "-- self-scales to any resolution, unlike a fixed pixel padding. "
+                                                         "0 = disabled, use 'padding' instead. Many 3D/conditioning pipelines "
+                                                         "expect the subject to occupy ~90% of the frame (about 8-10% margin), "
+                                                         "not edge-to-edge."}),
             }
         }
 
