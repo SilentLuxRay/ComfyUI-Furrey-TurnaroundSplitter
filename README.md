@@ -56,6 +56,7 @@ nothing is stretched or resized to force a uniform size.
 | `merge_gap` | Background gaps narrower than this (px) get merged into the same view, instead of splitting it |
 | `min_width` | Minimum width (px) for a detected block to count as a real view, not noise |
 | `tight_vertical` | Crop each view to its own content height instead of the full image height |
+| `pad_to_square` | Pad each cropped view to a square canvas, centered, filled with the detected background color — useful for pipelines (e.g. CLIP-Vision-based conditioning) that expect square, centered inputs |
 
 Outputs: `view_1` … `view_8` (unused slots return an 8×8 black placeholder) and `info`
 (a text summary of what was detected, for debugging).

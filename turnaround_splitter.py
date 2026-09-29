@@ -26,6 +26,8 @@ class AutoSplitTurnaroundSheet:
                                        "tooltip": "Minimum block width in px to be considered a real figure, not noise."}),
                 "tight_vertical": ("BOOLEAN", {"default": False,
                                                 "tooltip": "Crop each view to its own tight vertical content bounds instead of the full image height."}),
+                "pad_to_square": ("BOOLEAN", {"default": False,
+                                               "tooltip": "Pad each cropped view to a square canvas (centered, filled with the detected background color). Useful for pipelines (e.g. CLIPVisionEncode-based conditioning) that expect square, centered inputs."}),
             }
         }
 
@@ -35,7 +37,7 @@ class AutoSplitTurnaroundSheet:
     CATEGORY = "image/transform"
 
     def split(self, image, num_views, padding, bg_threshold, min_col_fraction,
-              merge_gap, min_width, tight_vertical):
+              merge_gap, min_width, tight_vertical, pad_to_square=False):
         ref = image[0]  # H, W, C
         H, W = ref.shape[0], ref.shape[1]
 
@@ -94,7 +96,16 @@ class AutoSplitTurnaroundSheet:
                 else:
                     y0, y1 = 0, H
                 crop = image[:, y0:y1, x0:x1, :]
-                info_lines.append(f"  view_{i+1}: x={x0}, y={y0}, width={x1-x0}, height={y1-y0}")
+                if pad_to_square:
+                    ch, cw = crop.shape[1], crop.shape[2]
+                    side = max(ch, cw)
+                    canvas = bg_color.view(1, 1, 1, -1).expand(crop.shape[0], side, side, crop.shape[-1]).clone()
+                    oy, ox = (side - ch) // 2, (side - cw) // 2
+                    canvas[:, oy:oy + ch, ox:ox + cw, :] = crop
+                    crop = canvas
+                    info_lines.append(f"  view_{i+1}: x={x0}, y={y0}, width={x1-x0}, height={y1-y0} -> padded to {side}x{side}")
+                else:
+                    info_lines.append(f"  view_{i+1}: x={x0}, y={y0}, width={x1-x0}, height={y1-y0}")
                 outputs.append(crop)
             else:
                 outputs.append(torch.zeros((1, 8, 8, image.shape[-1]), dtype=image.dtype, device=image.device))
