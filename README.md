@@ -50,7 +50,8 @@ nothing is stretched or resized to force a uniform size.
 |---|---|
 | `image` | The turnaround sheet to split |
 | `num_views` | How many views to detect/output (1-8) |
-| `padding` | Extra margin (px) added around each detected view |
+| `padding` | Fixed extra margin (px) added around each detected view. Ignored if `margin_percent` > 0 |
+| `margin_percent` | Margin as a % of the view's own size, added on every side (self-scales to any resolution). Many 3D/conditioning pipelines expect the subject to occupy ~90% of the frame (~8-10% margin), not edge-to-edge — 0 disables this and falls back to `padding` |
 | `bg_threshold` | Per-pixel distance from the detected background color to count as "content" |
 | `min_col_fraction` | Minimum fraction of a column that must be "content" to count it as part of a figure (filters noise) |
 | `merge_gap` | Background gaps narrower than this (px) get merged into the same view, instead of splitting it |

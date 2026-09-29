@@ -15,7 +15,15 @@ class AutoSplitTurnaroundSheet:
             "required": {
                 "image": ("IMAGE",),
                 "num_views": ("INT", {"default": 4, "min": 1, "max": MAX_VIEWS}),
-                "padding": ("INT", {"default": 12, "min": 0, "max": 512}),
+                "padding": ("INT", {"default": 12, "min": 0, "max": 512,
+                                     "tooltip": "Fixed margin in pixels. Ignored if margin_percent > 0."}),
+                "margin_percent": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 50.0, "step": 0.5,
+                                              "tooltip": "Margin as a percentage of the view's own size, added on ALL sides "
+                                                         "(including top/bottom, even outside the source sheet's own bounds) "
+                                                         "-- self-scales to any resolution, unlike a fixed pixel padding. "
+                                                         "0 = disabled, use 'padding' instead. Many 3D/conditioning pipelines "
+                                                         "expect the subject to occupy ~90% of the frame (about 8-10% margin), "
+                                                         "not edge-to-edge."}),
                 "bg_threshold": ("FLOAT", {"default": 0.04, "min": 0.0, "max": 1.0, "step": 0.005,
                                             "tooltip": "Per-pixel distance from the detected background color, above which a pixel counts as 'content'."}),
                 "min_col_fraction": ("FLOAT", {"default": 0.01, "min": 0.0, "max": 1.0, "step": 0.005,
@@ -37,7 +45,7 @@ class AutoSplitTurnaroundSheet:
     CATEGORY = "image/transform"
 
     def split(self, image, num_views, padding, bg_threshold, min_col_fraction,
-              merge_gap, min_width, tight_vertical, pad_to_square=False):
+              merge_gap, min_width, tight_vertical, pad_to_square=False, margin_percent=0.0):
         ref = image[0]  # H, W, C
         H, W = ref.shape[0], ref.shape[1]
 
@@ -82,30 +90,37 @@ class AutoSplitTurnaroundSheet:
         for i in range(MAX_VIEWS):
             if i < len(merged):
                 a, b = merged[i]
-                x0 = max(0, a - padding)
-                x1 = min(W, b + 1 + padding)
                 if tight_vertical:
                     sub = content_mask[:, a:b + 1]
                     rows_frac = sub.float().mean(dim=1)
                     rows_has = (rows_frac > min_col_fraction).nonzero(as_tuple=True)[0]
                     if len(rows_has) > 0:
-                        y0 = max(0, int(rows_has.min()) - padding)
-                        y1 = min(H, int(rows_has.max()) + 1 + padding)
+                        cy0, cy1 = int(rows_has.min()), int(rows_has.max()) + 1
                     else:
-                        y0, y1 = 0, H
+                        cy0, cy1 = 0, H
                 else:
-                    y0, y1 = 0, H
-                crop = image[:, y0:y1, x0:x1, :]
+                    cy0, cy1 = 0, H
+                cx0, cx1 = a, b + 1
+                content = image[:, cy0:cy1, cx0:cx1, :]  # the tight content, no margin yet
+                ch, cw = content.shape[1], content.shape[2]
+
+                if margin_percent > 0:
+                    m = int(round(max(ch, cw) * margin_percent / 100.0))
+                    mx = my = m
+                else:
+                    mx = my = padding
+
+                out_h, out_w = ch + 2 * my, cw + 2 * mx
                 if pad_to_square:
-                    ch, cw = crop.shape[1], crop.shape[2]
-                    side = max(ch, cw)
-                    canvas = bg_color.view(1, 1, 1, -1).expand(crop.shape[0], side, side, crop.shape[-1]).clone()
-                    oy, ox = (side - ch) // 2, (side - cw) // 2
-                    canvas[:, oy:oy + ch, ox:ox + cw, :] = crop
-                    crop = canvas
-                    info_lines.append(f"  view_{i+1}: x={x0}, y={y0}, width={x1-x0}, height={y1-y0} -> padded to {side}x{side}")
-                else:
-                    info_lines.append(f"  view_{i+1}: x={x0}, y={y0}, width={x1-x0}, height={y1-y0}")
+                    side = max(out_h, out_w)
+                    out_h = out_w = side
+
+                canvas = bg_color.view(1, 1, 1, -1).expand(content.shape[0], out_h, out_w, content.shape[-1]).clone()
+                oy, ox = (out_h - ch) // 2, (out_w - cw) // 2
+                canvas[:, oy:oy + ch, ox:ox + cw, :] = content
+                crop = canvas
+                info_lines.append(f"  view_{i+1}: content=({cx0},{cy0})-({cx1},{cy1}) size={cw}x{ch}, "
+                                   f"margin={mx}px/{my}px -> output {out_w}x{out_h}")
                 outputs.append(crop)
             else:
                 outputs.append(torch.zeros((1, 8, 8, image.shape[-1]), dtype=image.dtype, device=image.device))
