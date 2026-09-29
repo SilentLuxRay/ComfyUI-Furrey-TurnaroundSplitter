@@ -68,6 +68,21 @@ Feed a `LoadImage` of a 4-view turnaround sheet straight into this node, `num_vi
 and wire `view_1`..`view_4` into whatever your pipeline expects per view (RemoveBackground,
 crop-to-mask, conditioning, etc.) — no manual x/y/width/height guessing.
 
+## 📐 Bonus node: Scale Mesh (per axis)
+
+A small utility node (category `3d/mesh`) that scales a `MESH`'s vertices independently
+per axis (X/Y/Z) around the bounding-box center (or world origin). Useful when a 3D
+generator's output comes out squashed or stretched on one axis and there's no exposed
+parameter to fix it upstream — impose the correct proportion directly in the workflow,
+right after mesh generation and before saving, instead of fixing it by hand in Blender
+every time.
+
+| Input | Description |
+|---|---|
+| `mesh` | The mesh to scale |
+| `scale_x` / `scale_y` / `scale_z` | Per-axis multiplier (1.0 = unchanged) |
+| `pivot` | `bbox_center` (scale around the mesh's own bounding-box center) or `origin` (scale around world 0,0,0) |
+
 ---
 
 Created by Furrey for the ComfyUI community.
